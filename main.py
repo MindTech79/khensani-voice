@@ -40,7 +40,6 @@ from kokoro_onnx import Kokoro
 tts = Kokoro(MODEL_PATH, VOICES_PATH)
 print("Kokoro TTS ready — voice: af_heart")
 
-# --- rest of your code stays the same ---
 def cache_path(text: str) -> str:
     key = hashlib.md5(text.encode()).hexdigest()
     return os.path.join(CACHE_DIR, f"{key}.wav")
@@ -48,6 +47,21 @@ def cache_path(text: str) -> str:
 class SynthRequest(BaseModel):
     text: str
     speed: float = 0.95
+
+# --- Root route so visiting the base URL doesn't return 404 ---
+@app.get("/")
+async def root():
+    return {
+        "service": "Khensani Voice Server",
+        "status": "active",
+        "engine": "kokoro-tts",
+        "voice": "af_heart",
+        "endpoints": {
+            "synthesize": "POST /synthesize",
+            "health": "GET /health",
+            "docs": "GET /docs"
+        }
+    }
 
 @app.post("/synthesize")
 async def synthesize(req: SynthRequest):
